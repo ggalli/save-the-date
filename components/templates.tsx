@@ -3,19 +3,34 @@
 import { useInvite } from '@/context/invite-context'
 import { Card } from '@/components/ui/card'
 import Image from 'next/image'
-
-const templates = [
-  'https://buydjdeppyalzjlxouiw.supabase.co/storage/v1/object/public/save%20the%20date/templates/template1.jpg',
-  'https://buydjdeppyalzjlxouiw.supabase.co/storage/v1/object/public/save%20the%20date/templates/template2.jpg',
-  'https://buydjdeppyalzjlxouiw.supabase.co/storage/v1/object/public/save%20the%20date/templates/template3.jpg',
-]
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase.config'
 
 export function Templates() {
   const { inviteData, updateInviteData } = useInvite()
 
+  const { data } = useQuery({
+    queryKey: ['templates'],
+    queryFn: async () => {
+      const { data } = await supabase.storage
+        .from('save the date')
+        .list('templates')
+
+      return data
+    },
+  })
+
+  const templateURLs =
+    data?.map(
+      (file) =>
+        supabase.storage
+          .from('save the date')
+          .getPublicUrl(`templates/${file.name}`).data.publicUrl,
+    ) || []
+
   return (
     <div className="grid grid-cols-3 gap-4">
-      {templates.map((url, index) => (
+      {templateURLs.map((url, index) => (
         <Card
           key={index}
           className={`relative w-40 h-56 cursor-pointer transition-all overflow-hidden ${
