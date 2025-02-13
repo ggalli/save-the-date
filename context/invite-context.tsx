@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, type ReactNode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 interface InviteData {
   templateUrl?: string
@@ -16,6 +17,16 @@ interface InviteContextType {
 
 const InviteContext = createContext<InviteContextType | undefined>(undefined)
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
 export function InviteProvider({ children }: { children: ReactNode }) {
   const [inviteData, setInviteData] = useState<InviteData>({
     templateUrl: undefined,
@@ -29,9 +40,11 @@ export function InviteProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <InviteContext.Provider value={{ inviteData, updateInviteData }}>
-      {children}
-    </InviteContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <InviteContext.Provider value={{ inviteData, updateInviteData }}>
+        {children}
+      </InviteContext.Provider>
+    </QueryClientProvider>
   )
 }
 
